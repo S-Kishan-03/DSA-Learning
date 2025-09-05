@@ -79,6 +79,33 @@ export default function Home() {
       error: null,
     });
   }, [learningContentCache]);
+  
+  const handleRegenerate = useCallback(() => {
+    if (!modalState.topic) return;
+    
+    const topic = modalState.topic;
+
+    // Invalidate cache for the specific topic
+    setLearningContentCache(prevCache => {
+      const newCache = new Map(prevCache);
+      newCache.delete(topic.name);
+      try {
+        localStorage.setItem(CACHE_KEY, JSON.stringify(Array.from(newCache.entries())));
+      } catch (error) {
+        console.error("Failed to update learning content in localStorage", error);
+      }
+      return newCache;
+    });
+
+    // Set loading state to trigger re-fetch
+    setModalState(prevState => ({
+      ...prevState,
+      content: null,
+      isLoading: true,
+      error: null,
+    }));
+  }, [modalState.topic]);
+
 
   useEffect(() => {
     if (modalState.isOpen && modalState.topic && !modalState.content && modalState.isLoading) {
@@ -170,6 +197,7 @@ export default function Home() {
         content={modalState.content}
         isLoading={modalState.isLoading}
         error={modalState.error}
+        onRegenerate={handleRegenerate}
       />
     </>
   );

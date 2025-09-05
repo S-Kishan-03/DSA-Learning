@@ -5,14 +5,16 @@ import type { LearningContent, Topic, PracticeProblem } from '@/types';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { CodeBlock } from './code-block';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Terminal, Lightbulb, BarChart3, Puzzle, BookOpen, AlertCircle, Key, Check, Bot } from 'lucide-react';
+import { Loader2, Terminal, Lightbulb, BarChart3, Puzzle, BookOpen, AlertCircle, Key, Check, Bot, RefreshCw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface LearningModalProps {
   isOpen: boolean;
   onClose: () => void;
+  onRegenerate: () => void;
   topic: Topic | null;
   content: LearningContent | null;
   isLoading: boolean;
@@ -25,20 +27,30 @@ const difficultyColors: Record<PracticeProblem['difficulty'], string> = {
   Hard: 'bg-red-500/10 text-red-400 border-red-500/20',
 };
 
-export function LearningModal({ isOpen, onClose, topic, content, isLoading, error }: LearningModalProps) {
+export function LearningModal({ isOpen, onClose, topic, content, isLoading, error, onRegenerate }: LearningModalProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col p-0">
-        <DialogHeader className="p-6 pb-2">
-          <DialogTitle className="text-2xl text-primary flex items-center gap-2">
-            <Bot /> Learning Module: {topic?.name}
-          </DialogTitle>
-          <DialogDescription>
-            An AI-generated guide to master this topic.
-          </DialogDescription>
+        <DialogHeader className="p-6 pb-2 border-b">
+          <div className="flex justify-between items-center">
+            <div className="flex-1">
+              <DialogTitle className="text-2xl text-primary flex items-center gap-2">
+                <Bot /> Learning Module: {topic?.name}
+              </DialogTitle>
+              <DialogDescription>
+                An AI-generated guide to master this topic.
+              </DialogDescription>
+            </div>
+            {!isLoading && !error && content && (
+              <Button variant="outline" size="sm" onClick={onRegenerate} disabled={isLoading}>
+                <RefreshCw className={cn("mr-2 h-4 w-4", isLoading && "animate-spin")} />
+                Regenerate
+              </Button>
+            )}
+          </div>
         </DialogHeader>
         <ScrollArea className="flex-1 px-6 pb-6">
-          <div className="space-y-6">
+          <div className="space-y-6 pt-4">
             {isLoading && (
               <div className="flex flex-col items-center justify-center h-96 gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
