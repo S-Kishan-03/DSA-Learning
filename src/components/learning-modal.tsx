@@ -7,9 +7,11 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { CodeBlock } from './code-block';
+import { DoubtSolver } from './doubt-solver';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { Loader2, Terminal, Lightbulb, BarChart3, Puzzle, BookOpen, AlertCircle, Key, Check, Bot, RefreshCw } from 'lucide-react';
+import { Loader2, Terminal, Lightbulb, BarChart3, Puzzle, BookOpen, AlertCircle, Key, Check, Bot, RefreshCw, HelpCircle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+
 
 interface LearningModalProps {
   isOpen: boolean;
@@ -27,7 +29,34 @@ const difficultyColors: Record<PracticeProblem['difficulty'], string> = {
   Hard: 'bg-red-500/10 text-red-400 border-red-500/20',
 };
 
+const createDoubtContext = (topic: Topic | null, content: LearningContent | null): string => {
+    if (!topic || !content) return '';
+    return `
+Topic: ${topic.name}
+
+Key Takeaways:
+${content.keyTakeaways}
+
+Core Concept:
+${content.coreConcept}
+
+Key Patterns:
+${content.keyPatterns}
+
+C# Implementation:
+${content.csharpImplementation}
+
+Problem Walkthrough:
+${content.problemWalkthrough}
+
+Complexity Analysis:
+${content.complexityAnalysis}
+    `.trim();
+};
+
 export function LearningModal({ isOpen, onClose, topic, content, isLoading, error, onRegenerate }: LearningModalProps) {
+  const doubtContext = React.useMemo(() => createDoubtContext(topic, content), [topic, content]);
+    
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-4xl w-[95vw] h-[90vh] flex flex-col p-0">
@@ -99,6 +128,9 @@ export function LearningModal({ isOpen, onClose, topic, content, isLoading, erro
                             </details>
                         ))}
                     </div>
+                </Section>
+                <Section icon={<HelpCircle />} title="Doubt Solver">
+                    <DoubtSolver context={doubtContext} />
                 </Section>
               </div>
             )}

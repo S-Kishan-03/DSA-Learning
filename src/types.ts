@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 export interface Topic {
   name: string;
   patterns: string[];
@@ -39,3 +41,19 @@ export const dailyMicroRoutine = [
   'Solve one new medium problem (30-45 mins)',
   'Read about one new pattern/concept (10-15 mins)',
 ];
+
+// Schema for the AnswerDoubt flow
+export const AnswerDoubtInputSchema = z.object({
+  question: z.string().describe("The user's question or doubt."),
+  context: z
+    .string()
+    .describe('The learning material context to use for answering the question.'),
+});
+export type AnswerDoubtInput = z.infer<typeof AnswerDoubtInputSchema>;
+
+export const AnswerDoubtOutputSchema = z.object({
+  answer: z
+    .string()
+    .describe("The AI-generated answer to the user's question."),
+});
+export type AnswerDoubtOutput = z.infer<typeof AnswerDoubtOutputSchema>;
