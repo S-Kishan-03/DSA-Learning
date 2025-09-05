@@ -22,6 +22,8 @@ type ModalState = {
   error: string | null;
 };
 
+const CACHE_KEY = 'learningContentCache';
+
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<Day>(dsaPlan[0]);
   const [modalState, setModalState] = useState<ModalState>({
@@ -36,6 +38,19 @@ export default function Home() {
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  // Load cache from localStorage on initial render
+  useEffect(() => {
+    try {
+      const cachedData = localStorage.getItem(CACHE_KEY);
+      if (cachedData) {
+        const cacheArray = JSON.parse(cachedData);
+        setLearningContentCache(new Map(cacheArray));
+      }
+    } catch (error) {
+      console.error("Failed to load learning content cache from localStorage", error);
+    }
+  }, []);
 
   const handleSelectDay = useCallback((day: Day) => {
     setSelectedDay(day);
@@ -77,7 +92,16 @@ export default function Home() {
             topicPracticeProblems: topic.practice,
           });
 
-          setLearningContentCache(prevCache => new Map(prevCache).set(topic.name, content));
+          setLearningContentCache(prevCache => {
+            const newCache = new Map(prevCache).set(topic.name, content);
+            try {
+              localStorage.setItem(CACHE_KEY, JSON.stringify(Array.from(newCache.entries())));
+            } catch (error) {
+              console.error("Failed to save learning content to localStorage", error);
+            }
+            return newCache;
+          });
+          
           setModalState(prevState => ({
             ...prevState,
             content,
@@ -116,12 +140,10 @@ export default function Home() {
       <div className="flex min-h-screen w-full">
         {isMobile ? (
           <Sheet open={isSidebarOpen} onOpenChange={setSidebarOpen}>
-            <SheetTrigger asChild>
-              <Button variant="outline" size="icon" className="shrink-0 md:hidden fixed top-3 left-4 z-20">
+             <Button variant="outline" size="icon" className="shrink-0 md:hidden fixed top-3 left-4 z-20" onClick={() => setSidebarOpen(true)}>
                 <PanelLeft className="h-5 w-5" />
                 <span className="sr-only">Toggle navigation menu</span>
               </Button>
-            </SheetTrigger>
             <SheetContent side="left" className="p-0 w-[300px] bg-card border-r-0">
               {sidebarComponent}
             </SheetContent>
