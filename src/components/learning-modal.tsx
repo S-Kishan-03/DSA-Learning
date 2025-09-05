@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { CodeBlock } from './code-block';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Loader2, Terminal, Lightbulb, BarChart3, Puzzle, BookOpen, AlertCircle, Key, Check, Bot } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 interface LearningModalProps {
   isOpen: boolean;
