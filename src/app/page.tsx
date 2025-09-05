@@ -3,7 +3,7 @@
 import type { Day, Topic, LearningContent } from '@/types';
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { dsaPlan } from '@/data/plan';
-import { generatePersonalizedLearningContent } from '@/ai/flows/generate-personalized-learning-content';
+import { generatePersonalizedLearningContent } from '@/ai/public-client';
 
 import { Sidebar } from '@/components/sidebar';
 import { DayView } from '@/components/day-view';

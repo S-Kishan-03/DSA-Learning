@@ -4,7 +4,7 @@ import React, { useState, useCallback } from 'react';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Loader2, Sparkles, AlertCircle } from 'lucide-react';
-import { answerDoubt } from '@/ai/flows/answer-doubt-flow';
+import { answerDoubt } from '@/ai/public-client';
 import type { AnswerDoubtInput } from '@/types';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
