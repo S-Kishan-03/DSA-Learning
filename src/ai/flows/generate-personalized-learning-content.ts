@@ -50,7 +50,7 @@ const prompt = ai.definePrompt({
   },
   output: {schema: LearningContentSchema},
   prompt: `You are an expert C# developer and world-class instructor creating a learning module for a developer preparing for a technical interview.\n  The topic is: "{{{topicName}}}".
-  Focus on these specific patterns: {{{topicPatterns}}}.\n  Select this problem for the walkthrough: "{{{topicPracticeProblems.0}}}".
+  Focus on these specific patterns: {{{topicPatterns}}}.\n  Select this problem for the walkthrough: "{{{topicPracticeProblems.[0]}}}".
 
   Generate a comprehensive guide based on the provided JSON schema. Ensure all fields are filled with high-quality, accurate, and easy-to-understand content.
   The C# code you generate must be idiomatic, clean, and well-formatted. Specifically, use newline characters (\\n) and appropriate indentation within the code strings to ensure readability, mimicking the format of a well-structured C# file in Visual Studio.
