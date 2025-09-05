@@ -1,15 +1,20 @@
-import type { AnswerDoubtInput, LearningContent } from '@/types';
+import type {
+  AnswerDoubtInput,
+  GeneratePersonalizedLearningContentInput,
+  GeneratePersonalizedLearningContentOutput,
+  AnswerDoubtOutput,
+} from '@/types';
+import {generatePersonalizedLearningContent as generatePersonalizedLearningContentFlow} from '@/ai/flows/generate-personalized-learning-content';
+import {answerDoubt as answerDoubtFlow} from '@/ai/flows/answer-doubt-flow';
 
-export async function generatePersonalizedLearningContent(_: {
-  topicName: string;
-  topicPatterns: string[];
-  topicPracticeProblems: string[];
-}): Promise<LearningContent> {
-  throw new Error('AI content generation is disabled on static hosting (GitHub Pages).');
+export async function generatePersonalizedLearningContent(
+  input: GeneratePersonalizedLearningContentInput
+): Promise<GeneratePersonalizedLearningContentOutput> {
+  return generatePersonalizedLearningContentFlow(input);
 }
 
-export async function answerDoubt(_: AnswerDoubtInput): Promise<{ answer: string }> {
-  throw new Error('Doubt answering is disabled on static hosting (GitHub Pages).');
+export async function answerDoubt(
+  input: AnswerDoubtInput
+): Promise<AnswerDoubtOutput> {
+  return answerDoubtFlow(input);
 }
-
-

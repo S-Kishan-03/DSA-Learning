@@ -14,27 +14,31 @@ export interface Day {
   notes?: string;
 }
 
-export interface PracticeProblemExample {
-  input: string;
-  output: string;
-}
+export const PracticeProblemExampleSchema = z.object({
+  input: z.string(),
+  output: z.string(),
+});
+export type PracticeProblemExample = z.infer<typeof PracticeProblemExampleSchema>;
 
-export interface PracticeProblem {
-  description: string;
-  examples: PracticeProblemExample[];
-  difficulty: 'Easy' | 'Medium' | 'Hard';
-  hint: string;
-}
+export const PracticeProblemSchema = z.object({
+  description: z.string(),
+  examples: z.array(PracticeProblemExampleSchema),
+  difficulty: z.enum(['Easy', 'Medium', 'Hard']),
+  hint: z.string(),
+});
+export type PracticeProblem = z.infer<typeof PracticeProblemSchema>;
 
-export interface LearningContent {
-  keyTakeaways: string;
-  coreConcept: string;
-  keyPatterns: string;
-  csharpImplementation: string;
-  problemWalkthrough: string;
-  complexityAnalysis: string;
-  practiceProblems: PracticeProblem[];
-}
+
+export const LearningContentSchema = z.object({
+    keyTakeaways: z.string().describe("A bulleted list of the most important points from the learning module."),
+    coreConcept: z.string().describe("A detailed explanation of the core concept of the topic."),
+    keyPatterns: z.string().describe("An explanation of the key patterns associated with this topic."),
+    csharpImplementation: z.string().describe("A complete C# code sample demonstrating the implementation of the core concept."),
+    problemWalkthrough: z.string().describe("A step-by-step walkthrough of a common problem related to this topic."),
+    complexityAnalysis: z.string().describe("An analysis of the time and space complexity of the C# implementation."),
+    practiceProblems: z.array(PracticeProblemSchema).describe("A list of practice problems for the user to solve."),
+});
+export type LearningContent = z.infer<typeof LearningContentSchema>;
 
 export const dailyMicroRoutine = [
   'Review one past problem (15-20 mins)',
@@ -48,6 +52,7 @@ export const AnswerDoubtInputSchema = z.object({
   context: z
     .string()
     .describe('The learning material context to use for answering the question.'),
+  apiKey: z.string().optional().describe('The user-provided Gemini API key.'),
 });
 export type AnswerDoubtInput = z.infer<typeof AnswerDoubtInputSchema>;
 
@@ -57,3 +62,14 @@ export const AnswerDoubtOutputSchema = z.object({
     .describe("The AI-generated answer to the user's question."),
 });
 export type AnswerDoubtOutput = z.infer<typeof AnswerDoubtOutputSchema>;
+
+
+// Schema for the GeneratePersonalizedLearningContent flow
+export const GeneratePersonalizedLearningContentInputSchema = z.object({
+    topicName: z.string(),
+    topicPatterns: z.array(z.string()),
+    topicPracticeProblems: z.array(z.string()),
+    apiKey: z.string().optional().describe('The user-provided Gemini API key.'),
+});
+export type GeneratePersonalizedLearningContentInput = z.infer<typeof GeneratePersonalizedLearningContentInputSchema>;
+export type GeneratePersonalizedLearningContentOutput = LearningContent;

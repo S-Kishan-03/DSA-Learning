@@ -1,5 +1,6 @@
-import { config } from 'dotenv';
+import {config} from 'dotenv';
 config();
 
-import '@/ai/flows/generate-personalized-learning-content.ts';
-import '@/ai/flows/answer-doubt-flow.ts';
+// We don't import the flows here anymore because they are dynamically initialized
+// when called with an API key. This file is now primarily for setting up
+// environment variables if needed for other development purposes.

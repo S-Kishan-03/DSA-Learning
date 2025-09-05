@@ -8,6 +8,7 @@ import { generatePersonalizedLearningContent } from '@/ai/public-client';
 import { Sidebar } from '@/components/sidebar';
 import { DayView } from '@/components/day-view';
 import { LearningModal } from '@/components/learning-modal';
+import { ApiKeyDialog } from '@/components/api-key-dialog';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { PanelLeft } from 'lucide-react';
@@ -23,6 +24,7 @@ type ModalState = {
 };
 
 const CACHE_KEY = 'learningContentCache';
+const API_KEY_STORAGE_KEY = 'geminiApiKey';
 
 export default function Home() {
   const [selectedDay, setSelectedDay] = useState<Day>(dsaPlan[0]);
@@ -35,9 +37,18 @@ export default function Home() {
   });
   const [learningContentCache, setLearningContentCache] = useState<Map<string, LearningContent>>(new Map());
   const [isSidebarOpen, setSidebarOpen] = useState(false);
+  const [isApiKeyDialogOpen, setApiKeyDialogOpen] = useState(false);
+  const [apiKey, setApiKey] = useState<string | null>(null);
   
   const isMobile = useIsMobile();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const storedApiKey = localStorage.getItem(API_KEY_STORAGE_KEY);
+    if (storedApiKey) {
+      setApiKey(storedApiKey);
+    }
+  }, []);
 
   // Load cache from localStorage on initial render
   useEffect(() => {
@@ -70,6 +81,10 @@ export default function Home() {
   }, []);
 
   const handleStartLearning = useCallback((topic: Topic) => {
+    if (!apiKey) {
+      setApiKeyDialogOpen(true);
+      return;
+    }
     const cachedContent = learningContentCache.get(topic.name);
     setModalState({
       isOpen: true,
@@ -78,7 +93,7 @@ export default function Home() {
       isLoading: !cachedContent,
       error: null,
     });
-  }, [learningContentCache]);
+  }, [learningContentCache, apiKey]);
   
   const handleRegenerate = useCallback(() => {
     if (!modalState.topic) return;
@@ -111,12 +126,19 @@ export default function Home() {
     if (modalState.isOpen && modalState.topic && !modalState.content && modalState.isLoading) {
       const topic = modalState.topic;
 
+      if (!apiKey) {
+        setApiKeyDialogOpen(true);
+        setModalState(prevState => ({ ...prevState, isLoading: false }));
+        return;
+      }
+
       const fetchContent = async () => {
         try {
           const content = await generatePersonalizedLearningContent({
             topicName: topic.name,
             topicPatterns: topic.patterns,
             topicPracticeProblems: topic.practice,
+            apiKey: apiKey,
           });
 
           setLearningContentCache(prevCache => {
@@ -152,7 +174,19 @@ export default function Home() {
 
       fetchContent();
     }
-  }, [modalState, toast]);
+  }, [modalState, apiKey, toast]);
+
+  const handleApiKeySubmit = useCallback((newApiKey: string) => {
+    if (newApiKey) {
+      setApiKey(newApiKey);
+      localStorage.setItem(API_KEY_STORAGE_KEY, newApiKey);
+      setApiKeyDialogOpen(false);
+      // If a topic was selected, re-trigger learning modal
+      if (modalState.topic && !modalState.isOpen) {
+        handleStartLearning(modalState.topic);
+      }
+    }
+  }, [modalState.topic, handleStartLearning]);
 
   const sidebarComponent = useMemo(() => (
     <Sidebar
@@ -198,6 +232,12 @@ export default function Home() {
         isLoading={modalState.isLoading}
         error={modalState.error}
         onRegenerate={handleRegenerate}
+        apiKey={apiKey}
+      />
+      <ApiKeyDialog
+        isOpen={isApiKeyDialogOpen}
+        onClose={() => setApiKeyDialogOpen(false)}
+        onSubmit={handleApiKeySubmit}
       />
     </>
   );

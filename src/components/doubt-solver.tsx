@@ -10,9 +10,10 @@ import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 interface DoubtSolverProps {
   context: string;
+  apiKey: string | null;
 }
 
-export function DoubtSolver({ context }: DoubtSolverProps) {
+export function DoubtSolver({ context, apiKey }: DoubtSolverProps) {
   const [question, setQuestion] = useState('');
   const [answer, setAnswer] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -20,7 +21,7 @@ export function DoubtSolver({ context }: DoubtSolverProps) {
 
   const handleSubmit = useCallback(async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!question.trim()) return;
+    if (!question.trim() || !apiKey) return;
 
     setIsLoading(true);
     setError(null);
@@ -30,6 +31,7 @@ export function DoubtSolver({ context }: DoubtSolverProps) {
       const input: AnswerDoubtInput = {
         question,
         context,
+        apiKey,
       };
       const result = await answerDoubt(input);
       setAnswer(result.answer);
@@ -39,7 +41,7 @@ export function DoubtSolver({ context }: DoubtSolverProps) {
     } finally {
       setIsLoading(false);
     }
-  }, [question, context]);
+  }, [question, context, apiKey]);
 
   return (
     <div className="space-y-4">
@@ -50,9 +52,9 @@ export function DoubtSolver({ context }: DoubtSolverProps) {
           onChange={(e) => setQuestion(e.target.value)}
           placeholder="e.g., Explain the time complexity of the implementation."
           className="flex-1"
-          disabled={isLoading}
+          disabled={isLoading || !apiKey}
         />
-        <Button type="submit" disabled={isLoading || !question.trim()}>
+        <Button type="submit" disabled={isLoading || !question.trim() || !apiKey}>
           {isLoading ? (
             <Loader2 className="animate-spin" />
           ) : (

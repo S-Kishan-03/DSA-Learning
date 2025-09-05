@@ -21,6 +21,7 @@ interface LearningModalProps {
   content: LearningContent | null;
   isLoading: boolean;
   error: string | null;
+  apiKey: string | null;
 }
 
 const difficultyColors: Record<PracticeProblem['difficulty'], string> = {
@@ -54,7 +55,7 @@ ${content.complexityAnalysis}
     `.trim();
 };
 
-export function LearningModal({ isOpen, onClose, topic, content, isLoading, error, onRegenerate }: LearningModalProps) {
+export function LearningModal({ isOpen, onClose, topic, content, isLoading, error, onRegenerate, apiKey }: LearningModalProps) {
   const doubtContext = React.useMemo(() => createDoubtContext(topic, content), [topic, content]);
     
   return (
@@ -130,7 +131,7 @@ export function LearningModal({ isOpen, onClose, topic, content, isLoading, erro
                     </div>
                 </Section>
                 <Section icon={<HelpCircle />} title="Doubt Solver">
-                    <DoubtSolver context={doubtContext} />
+                    <DoubtSolver context={doubtContext} apiKey={apiKey} />
                 </Section>
               </div>
             )}

@@ -4,52 +4,42 @@
  * @fileOverview Generates personalized learning content for a C# developer preparing for a DSA interview.
  *
  * - generatePersonalizedLearningContent - A function that generates learning content based on the topic's name, key patterns, and practice problems.
- * - GeneratePersonalizedLearningContentInput - The input type for the generatePersonalizedLearningContent function.
- * - GeneratePersonalizedLearningContentOutput - The return type for the generatePersonalizedLearningContent function.
  */
 
-import {ai} from '@/ai/genkit';
-import {z} from 'genkit';
+import {genkit, type Genkit} from 'genkit';
+import {googleAI} from '@genkit-ai/googleai';
+import {
+  GeneratePersonalizedLearningContentInputSchema,
+  LearningContentSchema,
+  type GeneratePersonalizedLearningContentInput,
+  type GeneratePersonalizedLearningContentOutput,
+} from '@/types';
 
-const GeneratePersonalizedLearningContentInputSchema = z.object({
-  topicName: z.string().describe('The name of the topic.'),
-  topicPatterns: z.array(z.string()).describe('Key patterns for the topic.'),
-  topicPracticeProblems: z.array(z.string()).describe('Practice problems for the topic.'),
-});
-export type GeneratePersonalizedLearningContentInput = z.infer<typeof GeneratePersonalizedLearningContentInputSchema>;
+let ai: Genkit;
 
-const LearningContentSchema = z.object({
-  keyTakeaways: z.string().describe('The key takeaways from the topic.'),
-  coreConcept: z.string().describe('The core concept of the topic.'),
-  keyPatterns: z.string().describe('Key patterns related to the topic.'),
-  csharpImplementation: z.string().describe('C# implementation of the topic.'),
-  problemWalkthrough: z.string().describe('A detailed walkthrough of a practice problem.'),
-  complexityAnalysis: z.string().describe('The time and space complexity analysis of the implementation.'),
-  practiceProblems: z.array(z.object({
-    description: z.string().describe('A clear description of the problem.'),
-    examples: z.array(z.object({
-      input: z.string().describe('Example input for the problem.'),
-      output: z.string().describe('Expected output for the problem.'),
-    })).describe('Example inputs and outputs for the problem.'),
-    difficulty: z.enum(['Easy', 'Medium', 'Hard']).describe('The difficulty level of the problem.'),
-    hint: z.string().describe('A concise hint for the problem.'),
-  })).describe('Practice problems for the user to solve.'),
-});
-export type GeneratePersonalizedLearningContentOutput = z.infer<typeof LearningContentSchema>;
+function initializeGenkit(apiKey: string) {
+  if (ai) return;
+  ai = genkit({
+    plugins: [googleAI({apiKey})],
+    model: 'googleai/gemini-2.5-flash',
+  });
+}
 
 export async function generatePersonalizedLearningContent(
   input: GeneratePersonalizedLearningContentInput
 ): Promise<GeneratePersonalizedLearningContentOutput> {
-  return generatePersonalizedLearningContentFlow(input);
-}
+  if (!input.apiKey) {
+    throw new Error('API key is required.');
+  }
+  initializeGenkit(input.apiKey);
 
-const prompt = ai.definePrompt({
-  name: 'generatePersonalizedLearningContentPrompt',
-  input: {
-    schema: GeneratePersonalizedLearningContentInputSchema,
-  },
-  output: {schema: LearningContentSchema},
-  prompt: `You are an expert C# developer and world-class instructor creating a learning module for a developer preparing for a technical interview.
+  const prompt = ai.definePrompt({
+    name: 'generatePersonalizedLearningContentPrompt',
+    input: {
+      schema: GeneratePersonalizedLearningContentInputSchema,
+    },
+    output: {schema: LearningContentSchema},
+    prompt: `You are an expert C# developer and world-class instructor creating a learning module for a developer preparing for a technical interview.
   The topic is: "{{{topicName}}}".
   Focus on these specific patterns: {{{topicPatterns}}}.
   Select this problem for the walkthrough: "{{{lookup topicPracticeProblems 0}}}".
@@ -65,20 +55,13 @@ const prompt = ai.definePrompt({
   3. Include a mix of difficulties ('Easy', 'Medium', 'Hard').
   4. Provide a concise 'hint' for each.
   This is like a homework assignment for the user.`,
-});
+  });
 
-const generatePersonalizedLearningContentFlow = ai.defineFlow(
-  {
-    name: 'generatePersonalizedLearningContentFlow',
-    inputSchema: GeneratePersonalizedLearningContentInputSchema,
-    outputSchema: LearningContentSchema,
-  },
-  async input => {
-    const {output} = await prompt( {
-      topicName: input.topicName,
-      topicPatterns: input.topicPatterns,
-      topicPracticeProblems: input.topicPracticeProblems,
-    });
-    return output!;
-  }
-);
+  const {output} = await prompt({
+    topicName: input.topicName,
+    topicPatterns: input.topicPatterns,
+    topicPracticeProblems: input.topicPracticeProblems,
+    apiKey: input.apiKey,
+  });
+  return output!;
+}
