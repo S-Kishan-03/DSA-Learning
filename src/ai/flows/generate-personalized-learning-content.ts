@@ -15,10 +15,9 @@ import {
   type GeneratePersonalizedLearningContentOutput,
 } from '@/types';
 
-let ai: Genkit;
+let ai: Genkit | undefined;
 
 function initializeGenkit(apiKey: string) {
-  if (ai) return;
   ai = genkit({
     plugins: [googleAI({apiKey})],
     model: 'googleai/gemini-2.5-flash',
